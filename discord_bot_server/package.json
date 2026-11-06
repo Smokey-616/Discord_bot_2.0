@@ -1,0 +1,35 @@
+{
+  "name": "discord-persona-bot-server",
+  "version": "1.0.0",
+  "description": "Discord Persona Chatbot Server - Cloud-Only Deployment (24/7 uptime)",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js",
+    "pm2:start": "pm2 start ecosystem.config.js",
+    "pm2:stop": "pm2 stop all",
+    "pm2:restart": "pm2 restart all"
+  },
+  "keywords": [
+    "discord",
+    "bot",
+    "chatbot",
+    "persona",
+    "ai-memory",
+    "cloud-deployment"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "discord.js": "^14.14.1",
+    "openai": "^4.47.1",
+    "pg": "^8.11.3",
+    "redis": "^4.6.12"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

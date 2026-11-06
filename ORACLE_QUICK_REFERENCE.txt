@@ -1,0 +1,155 @@
+================================================================================
+ORACLE CLOUD DEPLOYMENT - QUICK REFERENCE CARD
+================================================================================
+
+🎯 TOTAL MONTHLY COST: $0.00 (FOREVER FREE!)
+    ✓ 2 vCPU (ARM Ampere A1)
+    ✓ 24GB RAM (most generous free tier in industry!)
+    ✓ 10 TB Storage
+    ✓ INFINITE duration (no expiration)
+
+================================================================================
+QUICK START COMMANDS
+================================================================================
+
+1️⃣  ORACLE CONSOLE SETUP:
+    - Sign up: https://www.oracle.com/cloud/free/
+    - Create "Always Free" VM: ARM Ampere A1 (2 vCPU, 24GB RAM)
+    - Configure Security List (CRITICAL!):
+      * Ingress Rules: Ports 22, 3001, 57299 → 0.0.0.0/0
+      * Egress Rules: Port 443 → 0.0.0.0/0
+
+2️⃣  SSH INTO INSTANCE:
+    ssh -i /path/to/oracle-key.pem opc@YOUR_ORACLE_IP
+
+3️⃣  AUTOMATED DEPLOYMENT:
+    curl -fsSL https://raw.githubusercontent.com/YOUR_USERNAME/discord_bot_2.0/main/oracle-deploy.sh | bash
+    
+4️⃣  EDIT DISCORD TOKEN:
+    cd /var/www/discord-bot-2.0/discord_bot_server
+    nano .env
+    # Replace DISCORD_BOT_TOKEN=your_encrypted_token_here
+
+5️⃣  CHECK DEPLOYMENT STATUS:
+    pm2 status persona-bot
+
+6️⃣  ACCESS DASHBOARD IN BROWSER:
+    http://YOUR_ORACLE_IP:3001
+
+7️⃣  CREATE FIRST BOT VIA WIZARD
+8️⃣  TEST BOT ON DISCORD (DM-only mode)
+
+================================================================================
+ESSENTIAL COMMANDS REFERENCE
+================================================================================
+
+📊 CHECK STATUS:
+    pm2 status persona-bot          # Check if bot is running
+    
+🔍 VIEW LOGS:
+    pm2 logs persona-bot --lines 50 # View recent logs
+    
+🔄 RESTART BOT:
+    pm2 restart persona-bot         # Restart gracefully
+    
+🗄️  DATABASE CHECK:
+    sudo systemctl status postgresql # Check PostgreSQL service
+    
+💾 CREATE BACKUP:
+    cd /var/www/discord-bot-2.0/scripts && ./backup-database.sh
+    
+🧹 VIEW MEMORY:
+    free -h                        # Check available memory (Oracle: 24GB!)
+    
+📦 CHECK DISK SPACE:
+    df -h                          # View disk usage
+
+================================================================================
+TROUBLESHOOTING QUICK FIXES
+================================================================================
+
+❌ Bot not responding on Discord:
+    pm2 restart persona-bot
+    nano .env  # Verify DISCORD_BOT_TOKEN is set correctly
+    
+❌ Dashboard won't load (port 3001):
+    pm2 status dashboard-api
+    sudo systemctl restart dashboard-api
+    
+❌ Database connection error:
+    sudo systemctl restart postgresql
+    psql -h localhost -U botuser -d botdb -c "SELECT 1;"
+    
+❌ Can't SSH into instance:
+    # Check security list in Oracle Console
+    # Ensure port 22 is allowed from 0.0.0.0/0
+    
+❌ Memory running low (Oracle has 24GB!):
+    free -h                      # Should see plenty of memory
+
+================================================================================
+ORACLE CLOUD CONFIGURATION (Security List)
+================================================================================
+
+CRITICAL: Configure in Oracle Console → Network & Security:
+
+1. INGRESS RULES (allow incoming):
+   - Port 22 (SSH)          → Source: 0.0.0.0/0
+   - Port 3001 (Dashboard)  → Source: 0.0.0.0/0
+   - Port 57299 (Discord)   → Source: 0.0.0.0/0
+
+2. EGRESS RULES (allow outgoing):
+   - HTTPS (443)            → Destination: 0.0.0.0/0
+
+This is REQUIRED for bot to connect to Discord API!
+
+================================================================================
+ENVIRONMENT VARIABLES (.env)
+================================================================================
+
+DISCORD_BOT_TOKEN=your_encrypted_token_here       # CRITICAL!
+OPENAI_API_KEY=sk-your-openai-key-here            # Optional (can skip)
+MEMORY_WINDOW_SIZE=50                             # Messages to remember
+AUTO_EXPIRE_HOURS=72                              # Auto-expiry window
+EXPLICIT_CONTENT_MODE=mature                       # or: fully_filtered/explicit
+
+================================================================================
+MONITORING & BACKUPS
+================================================================================
+
+📊 ORACLE MONITORING DASHBOARD:
+    Console → Compute → Instances → Your Instance → Monitor Tab
+    
+💾 AUTOMATIC BACKUPS (runs at 3AM daily):
+    Location: /var/backups/botdb-YYYYMMDD-HHMMSS.sql.gz
+    Log file: /var/log/oracle-backup.log
+
+================================================================================
+DISCORD SETUP STEPS (Steps 1-5)
+================================================================================
+
+1. Open https://discord.com/developers/applications
+2. Create "New Application", name it
+3. Go to "Bot" page in application dashboard
+4. Click "Reset Token" → Copy token (keep private!)
+5. Enable "Message Content Intent" and save
+
+Then paste token into: /var/www/discord-bot-2.0/discord_bot_server/.env
+
+================================================================================
+LEGAL DISCLAIMER
+================================================================================
+
+"All content generated by this platform is user-generated and respects Discord's 
+Terms of Service. Users are responsible for their own content creation. The platform 
+provides tools but does not host or moderate chatbot conversations. Deploy your bot 
+to cloud servers at no cost to your computer. Freedom and creativity first!"
+
+================================================================================
+
+🎉 Your Oracle Cloud Deployment is Complete!
+   Cost: $0.00/mo (Forever Free!)
+   Specs: 2 vCPU, 24GB RAM
+   Duration: Infinite (no expiration)
+
+================================================================================

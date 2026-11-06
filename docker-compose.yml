@@ -1,0 +1,144 @@
+# Discord Persona Chatbot Platform - Docker Compose with Oracle Notes
+# ================================================
+# This bot runs on CLOUD SERVERS ONLY (AWS/GCP/DigitalOcean/Oracle Cloud)
+# NEVER deploy to your personal computer!
+#
+# Oracle Cloud Specific Notes:
+# - FREE Tier includes 24GB RAM (vs AWS/GCP's 1GB free tier!)
+# - Always Free (no expiration like other providers)
+# - ARM processors for better performance
+version: '3.8'
+
+services:
+  # =============================
+  # DATABASE (PostgreSQL)
+  # =============================================
+  # Oracle Cloud: Can use self-hosted PostgreSQL (included in free tier!)
+  postgres:
+    image: postgres:15-alpine
+    container_name: persona-bot-db
+    restart: unless-stopped
+    
+    # Oracle Cloud Note: Uses local storage, not cloud volume by default
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-botuser}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-botpassword123}
+      POSTGRES_DB: botdb
+    
+    # Oracle Cloud Note: Add to security list if using cloud networking
+    ports:
+      - "5432:5432"  # Change in production for security
+    
+    # Health check
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "${POSTGRES_USER:-botuser}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # =============================
+  # MEMORY CACHE (Redis)
+  # =============================================
+  redis:
+    image: redis:7-alpine
+    container_name: persona-bot-redis
+    restart: unless-stopped
+    
+    volumes:
+      - redis_data:/data
+    
+    command: redis-server --appendonly yes
+    
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # =============================
+  # WEB DASHBOARD API
+  # =============================================
+  dashboard-api:
+    build:
+      context: ./web_dashboard/backend
+      dockerfile: Dockerfile
+    
+    container_name: persona-bot-dashboard
+    restart: unless-stopped
+    
+    # Oracle Cloud Note: Add port to security list (3001)
+    ports:
+      - "3001:3001"
+    
+    environment:
+      NODE_ENV: production
+      POSTGRES_URL: postgresql://${POSTGRES_USER:-botuser}:${POSTGRES_PASSWORD:-botpassword123}@postgres:5432/botdb
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: ${JWT_SECRET:-your_jwt_secret_here_change_in_production}
+    
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    
+    healthcheck:
+      test: ["CMD", "node", "-e", "process.exit(0)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # =============================
+  # DISCORD BOT SERVER
+  # =============================================
+  discord-bot:
+    build:
+      context: ./discord_bot_server
+      dockerfile: Dockerfile
+    
+    container_name: persona-bot-discord
+    restart: unless-stopped
+    
+    # Oracle Cloud Note: Add ports to security list (3001 for API, 57299 for Discord)
+    ports:
+      - "3002:3001"  # Expose API on different port for Discord compatibility
+    
+    environment:
+      NODE_ENV: production
+      DISCORD_BOT_TOKEN: ${DISCORD_BOT_TOKEN:-your_encrypted_token_here}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-your_openai_api_key_here}
+      MEMORY_WINDOW_SIZE: ${MEMORY_WINDOW_SIZE:-50}
+      AUTO_EXPIRE_HOURS: ${AUTO_EXPIRE_HOURS:-72}
+      EXPLICIT_CONTENT_MODE: ${EXPLICIT_CONTENT_MODE:-fully_filtered}
+    
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  # =============================
+  # Oracle Cloud: Backup Service (Optional)
+  # =============================================
+  oracle-backup:
+    image: alpine:latest
+    container_name: persona-bot-oracle-backup
+    restart: unless-stopped
+    volumes:
+      - /var/backups:/backups
+    command: >
+      sh -c "while true; do
+        sleep 21600;  # Run every 6 hours (for daily backup at 3AM)
+        pg_dump -U botuser -h postgres -d botdb | gzip > /backups/botdb-$(date +\%Y\%m\%d-\%H\%M\%S).sql.gz;
+      done"
+
+# =============================
+# VOLUME DEFINITIONS
+# =============================
+volumes:
+  postgres_data:
+  redis_data:
+  oracle_backups:

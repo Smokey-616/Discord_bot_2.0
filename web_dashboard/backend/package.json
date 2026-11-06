@@ -1,0 +1,33 @@
+{
+  "name": "discord-persona-platform",
+  "version": "1.0.0",
+  "description": "Discord Persona Chatbot Platform - Runs on cloud infrastructure, NEVER on your computer!",
+  "main": "index.js",
+  "scripts": {
+    "start": "node backend/server.js",
+    "dev": "nodemon backend/server.js",
+    "docker": "docker-compose up -d"
+  },
+  "keywords": [
+    "discord",
+    "bot",
+    "chatbot",
+    "persona",
+    "ai",
+    "cloud-deployment"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "jsonwebtoken": "^9.0.2",
+    "bcrypt": "^5.1.1",
+    "sequelize": "^6.37.0",
+    "pg": "^8.11.3",
+    "redis": "^4.6.12"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
